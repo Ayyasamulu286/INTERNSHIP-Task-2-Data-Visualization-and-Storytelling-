@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superstore Sales Performance Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; background: #f5f6fa; color: #222; min-height: 100vh; padding: 24px; }
+  h1 { font-size: 22px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #888; margin-bottom: 20px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+  .kpi { background: #fff; border-radius: 10px; padding: 16px 18px; border: 1px solid #e8e8f0; }
+  .kpi-label { font-size: 12px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .kpi-val { font-size: 26px; font-weight: 600; color: #1a1a2e; }
+  .kpi-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .card { background: #fff; border-radius: 12px; padding: 18px 20px; border: 1px solid #e8e8f0; }
+  .card-title { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; font-size: 12px; color: #666; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 4px; vertical-align: middle; }
+  .insight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 0; }
+  .insight { background: #fff; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #555; display: flex; align-items: flex-start; gap: 8px; border: 1px solid #e8e8f0; }
+  .insight-icon { color: #1D9E75; font-size: 16px; font-weight: 700; flex-shrink: 0; margin-top: 0px; }
+  @media (max-width: 800px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .charts-row { grid-template-columns: 1fr; }
+    .insight-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<h1>Sales Performance Dashboard</h1>
+<p class="subtitle">Superstore dataset &mdash; 2014–2017 &nbsp;|&nbsp; 9,994 transactions</p>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-label">Total Sales</div>
+    <div class="kpi-val">$2.30M</div>
+    <div class="kpi-sub">Across all regions</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Total Profit</div>
+    <div class="kpi-val">$286K</div>
+    <div class="kpi-sub">12.5% profit margin</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Total Orders</div>
+    <div class="kpi-val">5,009</div>
+    <div class="kpi-sub">Unique order IDs</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Total Customers</div>
+    <div class="kpi-val">793</div>
+    <div class="kpi-sub">Unique customers</div>
+  </div>
+</div>
+
+<div class="charts-row">
+  <div class="card">
+    <div class="card-title">Category wise sales</div>
+    <div class="legend">
+      <span><span class="leg-dot" style="background:#534AB7"></span>Technology</span>
+      <span><span class="leg-dot" style="background:#1D9E75"></span>Furniture</span>
+      <span><span class="leg-dot" style="background:#EF9F27"></span>Office supplies</span>
+    </div>
+    <div style="position:relative;width:100%;height:200px;">
+      <canvas id="catChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Region wise sales</div>
+    <div class="legend">
+      <span><span class="leg-dot" style="background:#534AB7"></span>West 32%</span>
+      <span><span class="leg-dot" style="background:#1D9E75"></span>East 30%</span>
+      <span><span class="leg-dot" style="background:#EF9F27"></span>Central 22%</span>
+      <span><span class="leg-dot" style="background:#D85A30"></span>South 17%</span>
+    </div>
+    <div style="position:relative;width:100%;height:200px;">
+      <canvas id="regionChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:14px;">
+  <div class="card-title">Monthly sales trend (all years combined)</div>
+  <div style="position:relative;width:100%;height:200px;">
+    <canvas id="monthChart"></canvas>
+  </div>
+</div>
+
+<div class="charts-row">
+  <div class="card">
+    <div class="card-title">Profit by sub-category (top 10)</div>
+    <div style="position:relative;width:100%;height:300px;">
+      <canvas id="profitChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Top 10 customers by sales</div>
+    <div style="position:relative;width:100%;height:300px;">
+      <canvas id="custChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:14px;">
+  <div class="card-title">Loss making sub-categories</div>
+  <div style="position:relative;width:100%;height:130px;">
+    <canvas id="lossChart"></canvas>
+  </div>
+</div>
+
+<div class="insight-grid">
+  <div class="insight"><span class="insight-icon">✓</span><span>Technology generated highest sales at $836K</span></div>
+  <div class="insight"><span class="insight-icon">✓</span><span>West region achieved highest revenue at $725K</span></div>
+  <div class="insight"><span class="insight-icon">✓</span><span>Copiers generated highest sub-category profit at $55.6K</span></div>
+  <div class="insight"><span class="insight-icon">✓</span><span>Tables incurred the largest loss at -$17.7K</span></div>
+  <div class="insight"><span class="insight-icon">✓</span><span>Sales peaked in November &amp; December</span></div>
+  <div class="insight"><span class="insight-icon">✓</span><span>Sean Miller is the top customer at $25K in sales</span></div>
+</div>
+
+<script>
+const gridColor = 'rgba(0,0,0,0.06)';
+const textColor = '#666';
+
+new Chart(document.getElementById('catChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Technology','Furniture','Office Supplies'],
+    datasets: [{
+      data: [836154, 741999, 719047],
+      backgroundColor: ['#534AB7','#1D9E75','#EF9F27'],
+      borderRadius: 5, borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: textColor, font: { size: 11 } }, grid: { color: gridColor } },
+      y: { ticks: { color: textColor, font: { size: 11 }, callback: v => '$' + (v/1000).toFixed(0) + 'K' }, grid: { color: gridColor } }
+    }
+  }
+});
+
+new Chart(document.getElementById('regionChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['West','East','Central','South'],
+    datasets: [{
+      data: [725458, 678781, 501240, 391722],
+      backgroundColor: ['#534AB7','#1D9E75','#EF9F27','#D85A30'],
+      borderWidth: 2, borderColor: '#fff'
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ' $' + (ctx.raw/1000).toFixed(0) + 'K (' + ((ctx.raw/2297200)*100).toFixed(1) + '%)' } }
+    },
+    cutout: '60%'
+  }
+});
+
+new Chart(document.getElementById('monthChart'), {
+  type: 'line',
+  data: {
+    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    datasets: [{
+      label: 'Sales',
+      data: [94925,59751,205005,137762,155029,152719,147238,159044,307650,200323,352461,325294],
+      borderColor: '#534AB7', backgroundColor: 'rgba(83,74,183,0.08)',
+      fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#534AB7'
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: textColor, font: { size: 11 }, autoSkip: false, maxRotation: 0 }, grid: { color: gridColor } },
+      y: { ticks: { color: textColor, font: { size: 11 }, callback: v => '$' + (v/1000).toFixed(0) + 'K' }, grid: { color: gridColor } }
+    }
+  }
+});
+
+new Chart(document.getElementById('profitChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Copiers','Phones','Accessories','Paper','Binders','Chairs','Storage','Appliances','Furnishings','Envelopes'],
+    datasets: [{
+      data: [55618,44516,41937,34054,30222,26590,21279,18138,13059,6964],
+      backgroundColor: '#1D9E75', borderRadius: 3
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: textColor, font: { size: 10 }, callback: v => '$' + (v/1000).toFixed(0) + 'K' }, grid: { color: gridColor } },
+      y: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('custChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Sean Miller','Tamara Chand','Raymond Buch','Tom Ashbrook','Adrian Barton','Ken Lonsdale','Sanjit Chand','Hunter Lopez','Sanjit Engle','C. Conant'],
+    datasets: [{
+      data: [25043,19052,15117,14596,14474,14175,14142,12873,12209,12129],
+      backgroundColor: '#534AB7', borderRadius: 3
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: textColor, font: { size: 10 }, callback: v => '$' + (v/1000).toFixed(0) + 'K' }, grid: { color: gridColor } },
+      y: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('lossChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Tables','Bookcases','Supplies'],
+    datasets: [{
+      data: [-17725,-3473,-1189],
+      backgroundColor: ['#D85A30','#E24B4A','#F09595'],
+      borderRadius: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: textColor, font: { size: 11 } }, grid: { color: gridColor } },
+      y: { ticks: { color: textColor, font: { size: 11 }, callback: v => (v < 0 ? '-$' : '$') + Math.abs(v/1000).toFixed(1) + 'K' }, grid: { color: gridColor } }
+    }
+  }
+});
+</script>
+</body>
+</html>
